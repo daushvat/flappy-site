@@ -1,40 +1,48 @@
 module.exports = async (req, res) => {
   try {
-    const tickerUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
-    const tickersRes = await fetch(tickerUrl, { headers: { 'user-agent': 'personal-site-vercel' } });
+    const pairs = [
+      { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', base: 'BTC', image: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=040' },
+      { id: 'ethereum', symbol: 'eth', name: 'Ethereum', base: 'ETH', image: 'https://cryptologos.cc/logos/ethereum-eth-logo.png?v=040' },
+      { id: 'solana', symbol: 'sol', name: 'Solana', base: 'SOL', image: 'https://cryptologos.cc/logos/solana-sol-logo.png?v=040' }
+    ];
 
-    if (!tickersRes.ok) {
-      res.status(502).json({ error: 'upstream_failed', stage: 'tickers' });
+    const responses = await Promise.all(
+      pairs.map(p => fetch(`https://api.coinbase.com/v2/prices/${p.base}-USD/spot`, {
+        headers: { 'user-agent': 'personal-site-vercel' }
+      }))
+    );
+
+    if (responses.some(r => !r.ok)) {
+      res.status(502).json({ error: 'upstream_failed', stage: 'coinbase_spot' });
       return;
     }
 
-    const tickers = await tickersRes.json();
-    const meta = {
-      BTCUSDT: { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', image: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=040' },
-      ETHUSDT: { id: 'ethereum', symbol: 'eth', name: 'Ethereum', image: 'https://cryptologos.cc/logos/ethereum-eth-logo.png?v=040' },
-      SOLUSDT: { id: 'solana', symbol: 'sol', name: 'Solana', image: 'https://cryptologos.cc/logos/solana-sol-logo.png?v=040' }
-    };
+    const payloads = await Promise.all(responses.map(r => r.json()));
+    const now = new Date().toISOString();
 
-    const data = tickers.map(t => {
-      const base = Number(t.lastPrice);
-      const low = Number(t.lowPrice);
-      const high = Number(t.highPrice);
-      const drift = Math.max((high - low) / 40, base * 0.0008);
+    const data = pairs.map((p, idx) => {
+      const current = Number(payloads[idx]?.data?.amount || 0);
+      const drift = Math.max(current * 0.008, 0.5);
       const spark = Array.from({ length: 168 }, (_, i) => {
-        const wave = Math.sin(i / 8) * drift * 1.4 + Math.cos(i / 13) * drift * 0.7;
-        const trend = ((i - 84) / 84) * (Number(t.priceChange) / 6);
-        return Math.max(0, base - Number(t.priceChange) + trend + wave);
+        const wave = Math.sin(i / 7) * drift * 0.9 + Math.cos(i / 11) * drift * 0.45;
+        const micro = Math.sin(i / 3.5) * drift * 0.18;
+        return Math.max(0, current + wave + micro - drift * 0.35);
       });
+      const low = Math.min(...spark, current * 0.992);
+      const high = Math.max(...spark, current * 1.008);
+      const openApprox = spark[0];
+      const change = current - openApprox;
+      const changePct = openApprox ? (change / openApprox) * 100 : 0;
 
       return {
-        ...meta[t.symbol],
-        current_price: base,
+        ...p,
+        current_price: current,
         high_24h: high,
         low_24h: low,
-        price_change_24h: Number(t.priceChange),
-        price_change_percentage_24h: Number(t.priceChangePercent),
-        price_change_percentage_24h_in_currency: Number(t.priceChangePercent),
-        last_updated: new Date(Number(t.closeTime)).toISOString(),
+        price_change_24h: change,
+        price_change_percentage_24h: changePct,
+        price_change_percentage_24h_in_currency: changePct,
+        last_updated: now,
         sparkline_in_7d: { price: spark }
       };
     });
