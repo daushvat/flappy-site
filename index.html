@@ -144,7 +144,7 @@
       <div>
         <div class="badge">Live Crypto Polling</div>
         <h1>Crypto Pulse</h1>
-        <div class="sub">A lightweight market dashboard showing Bitcoin, Ethereum, and Solana, with a simple 7 day chart. This temporary demo version polls a Vercel serverless API every 1 second so you can see updates visually.</div>
+        <div class="sub">A lightweight market dashboard showing Bitcoin, Ethereum, and Solana, with a simple 7 day chart. This version polls a Vercel serverless API every 15 seconds for live updates.</div>
       </div>
       <div class="small" id="updated">Loading live market data...</div>
     </div>
@@ -176,7 +176,7 @@
     </section>
 
     <footer>
-      Hosted on Vercel. Temporary demo mode, updates every 1 second.
+      Hosted on Vercel. Updates every 15 seconds.
     </footer>
   </div>
 
@@ -261,7 +261,7 @@
       renderTabs();
       renderChart();
       const updated = state.data[0]?.last_updated ? new Date(state.data[0].last_updated) : new Date();
-      document.getElementById('updated').textContent = `Updated ${updated.toLocaleString()} , refreshes every 1s`;
+      document.getElementById('updated').textContent = `Updated ${updated.toLocaleString()} , refreshes every 15s`;
     }
 
     async function refreshData() {
@@ -287,7 +287,7 @@
         refreshData().catch(() => {
           document.getElementById('updated').textContent = 'Temporary refresh issue, retrying...';
         });
-      }, 1000);
+      }, 15000);
     }
 
     start();
