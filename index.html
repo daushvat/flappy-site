@@ -178,6 +178,40 @@
       font-weight: 800;
       box-shadow: 0 0 16px rgba(255,86,216,0.18);
     }
+    .palette {
+      display: grid;
+      gap: 10px;
+    }
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .swatch {
+      appearance: none;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: transparent;
+      border-radius: 14px;
+      height: 48px;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .swatch:hover {
+      transform: translateY(-1px);
+    }
+    .swatch.active {
+      border-color: rgba(255,255,255,0.9);
+      box-shadow: 0 0 18px rgba(255,255,255,0.18);
+    }
+    .swatch::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 10px;
+      background: var(--swatch, linear-gradient(135deg, #69f5ff, #ff56d8));
+      box-shadow: 0 0 18px rgba(255,255,255,0.12);
+    }
     @media (max-width: 900px) {
       .shell { grid-template-columns: 1fr; }
       .panel { order: -1; }
@@ -232,6 +266,16 @@
           </div>
         </section>
 
+        <section class="palette">
+          <h2>Bird color</h2>
+          <div class="swatches" id="swatches">
+            <button class="swatch active" type="button" data-color="neon" data-label="Neon" style="--swatch: linear-gradient(135deg, #c4ff65, #69f5ff);"></button>
+            <button class="swatch" type="button" data-color="sunset" data-label="Sunset" style="--swatch: linear-gradient(135deg, #ffb454, #ff56d8);"></button>
+            <button class="swatch" type="button" data-color="plasma" data-label="Plasma" style="--swatch: linear-gradient(135deg, #8b5cf6, #69f5ff);"></button>
+            <button class="swatch" type="button" data-color="toxic" data-label="Toxic" style="--swatch: linear-gradient(135deg, #d9ff43, #42ffb3);"></button>
+          </div>
+        </section>
+
         <section>
           <h2>How it works</h2>
           <ul>
@@ -258,8 +302,16 @@
     const statusEl = document.getElementById('status');
     const startBtn = document.getElementById('startBtn');
     const tapBtn = document.getElementById('tapBtn');
+    const swatchesEl = document.getElementById('swatches');
 
     const bestStored = Number(localStorage.getItem('neon-flappy-best') || 0);
+    const savedBirdTheme = localStorage.getItem('neon-flappy-bird-theme') || 'neon';
+    const birdThemes = {
+      neon: { bodyA: '#c4ff65', bodyB: '#69f5ff', wing: '#ff56d8', beak: '#ffb454', glow: '#69f5ff' },
+      sunset: { bodyA: '#ffd166', bodyB: '#ff56d8', wing: '#ff8fab', beak: '#fff08a', glow: '#ff56d8' },
+      plasma: { bodyA: '#8b5cf6', bodyB: '#69f5ff', wing: '#ff56d8', beak: '#ffd166', glow: '#8b5cf6' },
+      toxic: { bodyA: '#d9ff43', bodyB: '#42ffb3', wing: '#69f5ff', beak: '#fff08a', glow: '#42ffb3' }
+    };
 
     const state = {
       bird: { x: 180, y: 300, vy: 0, r: 18 },
@@ -274,7 +326,8 @@
       speed: 3.4,
       gravity: 0.42,
       flapPower: -7.4,
-      pulse: 0
+      pulse: 0,
+      birdTheme: savedBirdTheme in birdThemes ? savedBirdTheme : 'neon'
     };
 
     bestEl.textContent = state.best;
@@ -458,24 +511,33 @@
       ctx.restore();
     }
 
+    function setBirdTheme(name) {
+      state.birdTheme = name in birdThemes ? name : 'neon';
+      localStorage.setItem('neon-flappy-bird-theme', state.birdTheme);
+      document.querySelectorAll('.swatch').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.color === state.birdTheme);
+      });
+    }
+
     function drawBird() {
       const { x, y, r, vy } = state.bird;
+      const theme = birdThemes[state.birdTheme] || birdThemes.neon;
       const angle = Math.max(-0.6, Math.min(0.9, vy * 0.08));
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(angle);
 
       const body = ctx.createLinearGradient(-r, -r, r, r);
-      body.addColorStop(0, '#c4ff65');
-      body.addColorStop(1, '#69f5ff');
+      body.addColorStop(0, theme.bodyA);
+      body.addColorStop(1, theme.bodyB);
       ctx.fillStyle = body;
       ctx.shadowBlur = 22;
-      ctx.shadowColor = '#69f5ff';
+      ctx.shadowColor = theme.glow;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#ff56d8';
+      ctx.fillStyle = theme.wing;
       ctx.beginPath();
       ctx.moveTo(-10, 2);
       ctx.lineTo(-28, -6);
@@ -492,7 +554,7 @@
       ctx.arc(8, -4, 2, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#ffb454';
+      ctx.fillStyle = theme.beak;
       ctx.beginPath();
       ctx.moveTo(14, 1);
       ctx.lineTo(28, 6);
@@ -567,7 +629,13 @@
     canvas.addEventListener('pointerdown', handlePrimaryAction);
     startBtn.addEventListener('click', () => resetGame());
     tapBtn.addEventListener('click', handlePrimaryAction);
+    swatchesEl.addEventListener('click', event => {
+      const button = event.target.closest('.swatch');
+      if (!button) return;
+      setBirdTheme(button.dataset.color);
+    });
 
+    setBirdTheme(state.birdTheme);
     updateHud();
     render();
     requestAnimationFrame(loop);
