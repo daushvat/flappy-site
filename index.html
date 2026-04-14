@@ -64,24 +64,40 @@
       color: var(--muted);
       font-size: 0.92rem;
     }
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 0 rgba(94,234,212,0.6);
+    .spinner {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      flex: 0 0 auto;
     }
-    .dot.syncing {
-      animation: pulse 1s infinite;
+    .spinner svg {
+      width: 18px;
+      height: 18px;
+      display: block;
     }
-    .dot.warn {
-      background: var(--warn);
-      box-shadow: none;
+    .spinner-ring {
+      stroke: rgba(255,255,255,0.14);
     }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(94,234,212,0.55); }
-      70% { box-shadow: 0 0 0 10px rgba(94,234,212,0); }
-      100% { box-shadow: 0 0 0 0 rgba(94,234,212,0); }
+    .spinner-arc {
+      stroke: var(--accent);
+      stroke-linecap: round;
+      transform-origin: 50% 50%;
+    }
+    .spinner.syncing .spinner-arc {
+      animation: spin 1s linear infinite;
+    }
+    .spinner.warn .spinner-arc {
+      stroke: var(--warn);
+      animation: spin 1.2s linear infinite;
+    }
+    .spinner.idle .spinner-arc {
+      animation: none;
+      stroke: var(--accent);
+      opacity: 0.9;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
     .grid {
       display: grid;
@@ -199,7 +215,12 @@
         <div class="sub">A lightweight market dashboard showing Bitcoin, Ethereum, and Solana, with a simple 7 day chart. This version polls a Vercel serverless API every 15 seconds for live updates.</div>
       </div>
       <div class="statusline">
-        <span class="dot" id="statusDot"></span>
+        <span class="spinner syncing" id="statusSpinner" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle class="spinner-ring" cx="12" cy="12" r="9" stroke-width="2.5"></circle>
+            <path class="spinner-arc" d="M21 12a9 9 0 0 0-9-9" stroke-width="2.5"></path>
+          </svg>
+        </span>
         <span id="updated">Loading live market data...</span>
       </div>
     </div>
@@ -250,11 +271,12 @@
 
     function setStatus(text, mode = 'ok') {
       const updated = document.getElementById('updated');
-      const dot = document.getElementById('statusDot');
+      const spinner = document.getElementById('statusSpinner');
       updated.textContent = text;
-      dot.className = 'dot';
-      if (mode === 'syncing') dot.classList.add('syncing');
-      if (mode === 'warn') dot.classList.add('warn');
+      spinner.className = 'spinner';
+      if (mode === 'syncing') spinner.classList.add('syncing');
+      else if (mode === 'warn') spinner.classList.add('warn');
+      else spinner.classList.add('idle');
     }
 
     function renderLoadingCards() {
