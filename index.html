@@ -21,14 +21,14 @@
     body {
       margin: 0;
       min-height: 100vh;
+      height: 100vh;
       font-family: Inter, Arial, sans-serif;
       color: var(--text);
       background:
         radial-gradient(circle at top, rgba(255, 86, 216, 0.18), transparent 30%),
         radial-gradient(circle at 20% 20%, rgba(105, 245, 255, 0.12), transparent 25%),
         linear-gradient(180deg, var(--bg2), var(--bg));
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden;
     }
     body::before {
       content: "";
@@ -41,16 +41,17 @@
     .wrap {
       position: relative;
       z-index: 1;
-      min-height: 100vh;
+      height: 100vh;
       display: grid;
       place-items: center;
-      padding: 24px;
+      padding: 16px;
     }
     .shell {
       width: min(100%, 1024px);
+      max-height: calc(100vh - 32px);
       display: grid;
       grid-template-columns: minmax(0, 1fr) 290px;
-      gap: 20px;
+      gap: 16px;
     }
     .stage, .panel {
       background: var(--panel);
@@ -59,8 +60,8 @@
       box-shadow: 0 24px 80px rgba(0,0,0,0.45);
       backdrop-filter: blur(10px);
     }
-    .stage { padding: 18px; }
-    .panel { padding: 18px; display: grid; gap: 16px; }
+    .stage { padding: 14px; }
+    .panel { padding: 14px; display: grid; gap: 12px; }
     .hero {
       display: flex;
       justify-content: space-between;
@@ -107,6 +108,8 @@
     }
     canvas {
       width: 100%;
+      max-height: min(70vh, 720px);
+      aspect-ratio: 19 / 18;
       display: block;
       background: linear-gradient(180deg, rgba(8, 14, 34, 0.95), rgba(4, 8, 22, 0.98));
       border: 1px solid rgba(255,255,255,0.07);
@@ -218,9 +221,12 @@
       .panel { order: -1; }
     }
     @media (max-width: 680px) {
-      body { overflow: auto; }
-      .wrap { padding: 14px; }
+      .wrap { padding: 10px; height: 100dvh; }
+      .shell { max-height: calc(100dvh - 20px); gap: 10px; }
       .tap { display: block; }
+      .sub, ul, .keys { display: none; }
+      .palette { gap: 8px; }
+      canvas { max-height: 52vh; }
     }
   </style>
 </head>
@@ -257,6 +263,7 @@
 
       <aside class="panel">
         <div class="status" id="status"><strong>Ready.</strong> Press Space, click, or tap to flap.</div>
+        <a class="btn" href="https://davushvat.com" style="text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;">Back to Hub</a>
         <button class="btn" id="startBtn">Start / Restart</button>
 
         <section>
