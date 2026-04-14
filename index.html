@@ -83,12 +83,14 @@
       line-height: 1.5;
     }
     .stats {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       width: min(100%, 250px);
     }
     .stat {
+      flex: 1 1 calc(50% - 5px);
+      min-width: 108px;
       padding: 12px 14px;
       border-radius: 16px;
       background: rgba(255,255,255,0.03);
