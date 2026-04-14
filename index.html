@@ -221,12 +221,75 @@
       .panel { order: -1; }
     }
     @media (max-width: 680px) {
-      .wrap { padding: 10px; height: 100dvh; }
-      .shell { max-height: calc(100dvh - 20px); gap: 10px; }
-      .tap { display: block; }
+      body { height: 100dvh; }
+      .wrap {
+        padding: 8px;
+        height: 100dvh;
+        align-items: stretch;
+      }
+      .shell {
+        width: 100%;
+        height: calc(100dvh - 16px);
+        max-height: calc(100dvh - 16px);
+        gap: 8px;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+      .stage, .panel {
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .panel {
+        padding: 10px;
+        gap: 8px;
+      }
+      .stage {
+        padding: 10px;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+      .hero {
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      h1 {
+        font-size: 1.35rem;
+        margin-bottom: 2px;
+      }
       .sub, ul, .keys { display: none; }
-      .palette { gap: 8px; }
-      canvas { max-height: 52vh; }
+      .stats {
+        width: 100%;
+        gap: 6px;
+      }
+      .stat {
+        padding: 8px 10px;
+        border-radius: 12px;
+      }
+      .stat-label {
+        font-size: 0.62rem;
+        margin-bottom: 3px;
+      }
+      .stat-value {
+        font-size: 1rem;
+      }
+      .palette { gap: 6px; }
+      .swatches { gap: 8px; }
+      .swatch {
+        height: 40px;
+        border-radius: 12px;
+      }
+      canvas {
+        width: 100%;
+        height: auto;
+        max-height: calc(100dvh - 265px);
+      }
+      .btn {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+      }
+      .tap {
+        display: block;
+        min-height: 56px;
+      }
     }
   </style>
 </head>
