@@ -21,14 +21,14 @@
     body {
       margin: 0;
       min-height: 100vh;
-      height: 100vh;
       font-family: Inter, Arial, sans-serif;
       color: var(--text);
       background:
         radial-gradient(circle at top, rgba(255, 86, 216, 0.18), transparent 30%),
         radial-gradient(circle at 20% 20%, rgba(105, 245, 255, 0.12), transparent 25%),
         linear-gradient(180deg, var(--bg2), var(--bg));
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
     body::before {
       content: "";
@@ -41,14 +41,13 @@
     .wrap {
       position: relative;
       z-index: 1;
-      height: 100vh;
+      min-height: 100vh;
       display: grid;
       place-items: center;
       padding: 16px;
     }
     .shell {
       width: min(100%, 1024px);
-      max-height: calc(100vh - 32px);
       display: grid;
       grid-template-columns: minmax(0, 1fr) 290px;
       gap: 16px;
